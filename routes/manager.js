@@ -5,8 +5,9 @@ const jwt=require("jsonwebtoken");
 const { QueryTypes } = require('sequelize');
 var sequelize=require('../orm/connection');
 
-route.get("/getEmployees",async function(request,response){
+route.post("/getEmployees",async function(request,response){
    try{
+      console.log("here",request.body);
       const employees = await sequelize.query(
          `SELECT skillmap.employee_id,employees.name,employees.status,employees.manager,
          employees.wfm_manager,employees.email,employees.lockstatus,
@@ -15,7 +16,7 @@ route.get("/getEmployees",async function(request,response){
          where employees.manager=$manager and employees.lockstatus='not_requested'
          GROUP BY skillmap.employee_id ORDER BY skillmap.employee_id;`,
          {
-            bind: { manager: request.query.managerName },
+            bind: { manager: request.body.managerName },
             type: QueryTypes.SELECT
          }
       );
