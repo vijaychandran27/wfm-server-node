@@ -5,14 +5,14 @@ const jwt=require("jsonwebtoken");
 const { QueryTypes } = require('sequelize');
 var sequelize=require('../orm/connection');
 
-route.get("/getEmployees",async function(request,response){
+route.post("/getEmployees",async function(request,response){
    try{
       const employees = await sequelize.query(
-         `SELECT wfm.softlock.employee_id, wfm.softlock.manager as request, wfm.softlock.reqdate,
-         wfm.employees.manager FROM wfm.softlock LEFT JOIN wfm.employees ON wfm.employees.employee_id = wfm.softlock.employee_id
+         `SELECT wfm.softlock.employee_id, wfm.softlock.manager as request, DATE(wfm.softlock.reqdate)  as reqdate,
+         wfm.employees.manager, wfm.softlock.requestmessage FROM wfm.softlock LEFT JOIN wfm.employees ON wfm.employees.employee_id = wfm.softlock.employee_id
          WHERE wfm.employees.wfm_manager = $manager AND wfm.softlock.status = 'waiting';`,
          {
-            bind: { manager: request.query.managerName },
+            bind: { manager: request.body.wfmName },
             type: QueryTypes.SELECT
          }
       );
@@ -45,7 +45,9 @@ route.post("/updateRequestMessage", async function (request, resonse) {
    try {
       const employee_id = request.body.employee_id;
       const managerstatus = request.body.managerstatus;
-      const mgrstatuscomment = request.body.mgrstatuscomment;
+      let mgrstatuscomment = 'I Have found someone better';
+      if(managerstatus == 'accepted')
+         mgrstatuscomment = 'granted';
 
       const result =await sequelize.query(`UPDATE wfm.softlock SET managerstatus = $managerstatus, mgrstatuscomment = $mgrstatuscomment, wfm.softlock.status = 'approved', mgrlastupdate = CURDATE() 
          WHERE employee_id = $employee_id;`,

@@ -7,7 +7,6 @@ var sequelize=require('../orm/connection');
 
 route.post("/getEmployees",async function(request,response){
    try{
-      console.log("here",request.body);
       const employees = await sequelize.query(
          `SELECT skillmap.employee_id,employees.name,employees.status,employees.manager,
          employees.wfm_manager,employees.email,employees.lockstatus,
